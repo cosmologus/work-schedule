@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="./favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<link href="./_app/immutable/assets/2.C-6FMrNJ.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.CHQge4Zu.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/entry.B0ZPkC5Q.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.D3aZ0wum.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.CWrevvuJ.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.HKgt0tew.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.CLQXET9T.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.Cp_CYLWa.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">   <div><label for="month" data-svelte-h="svelte-1tu0yco">Select Month:</label> <select id="month"><option value="0" >January</option><option value="1" >February</option><option value="2" >March</option><option value="3" >April</option><option value="4" >May</option><option value="5" >June</option><option value="6" >July</option><option value="7" >August</option><option value="8" >September</option><option value="9" selected>October</option><option value="10" >November</option><option value="11" >December</option></select> <label for="firstShiftDay" data-svelte-h="svelte-w9oeoo">First Day Shift:</label> <input type="number" id="firstShiftDay" min="1" max="31" value="1"></div> <div class="calendar svelte-1c8bjs7"> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-oype1j">Mon</div> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-15whdo3">Tue</div> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-1lrwgql">Wed</div> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-dqpgeo">Thu</div> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-1j3jkvk">Fri</div> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-1n3c7jh">Sat</div> <div class="day-header svelte-1c8bjs7" data-svelte-h="svelte-tkjq5b">Sun</div>  </div> 
+			
+			<script>
+				{
+					__sveltekit_y4cl5k = {
+						base: new URL(".", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null];
+
+					Promise.all([
+						import("./_app/immutable/entry/start.CHQge4Zu.js"),
+						import("./_app/immutable/entry/app.CWrevvuJ.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2],
+							data,
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
