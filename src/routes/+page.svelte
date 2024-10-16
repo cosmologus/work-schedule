@@ -38,14 +38,15 @@
     return (startDay + 6) % 7;  // Shift so that Monday is 0 and Sunday is 6
   }
 
-  // Generate the correct work shift pattern based on the first day shift
+  // Generate the calendar layout, keeping the dates aligned but recalculating the shift pattern
   function generateCalendar(month: number, year: number): ShiftDay[] {
     const totalDays = daysInMonth(month, year);
     const calendarDays: ShiftDay[] = [];
-    let currentDate = firstDayShift; // Start from the first day shift selected
+    let patternDay = firstDayShift; // Start the pattern from the selected first day shift
+    let isPatternActive = false; // Activate the pattern once we reach the firstDayShift
 
     // Add empty cells before the first day to align the first day with the correct weekday
-    const startDayOffset = getStartDay(month, year); // Adjusted start day based on Monday-first week
+    const startDayOffset = getStartDay(month, year);
     for (let i = 0; i < startDayOffset; i++) {
       calendarDays.push({
         date: new Date(year, month, i),
@@ -53,51 +54,64 @@
       });
     }
 
-    while (currentDate <= totalDays) {
-      // Day Shift (07:00 - 19:00)
-      if (currentDate <= totalDays) {
+    // Generate the calendar for the days of the month
+    for (let currentDate = 1; currentDate <= totalDays; currentDate++) {
+      // Activate the shift pattern once we hit the selected firstDayShift
+      if (currentDate === firstDayShift) {
+        isPatternActive = true;
+      }
+
+      // Only apply shift patterns starting from the selected first shift day
+      if (isPatternActive) {
+        // Day Shift (07:00 - 19:00)
         calendarDays.push({
           date: new Date(year, month, currentDate),
           shift: dayShift,
           type: 'day',
         });
+
+        // Night Shift starts at 19:00 (on the same day)
         currentDate++;
-      }
+        if (currentDate <= totalDays) {
+          calendarDays.push({
+            date: new Date(year, month, currentDate),
+            shift: nightShift,
+            type: 'night-start',
+          });
+        }
 
-      // Night Shift starts at 19:00 (on the same day)
-      if (currentDate <= totalDays) {
-        calendarDays.push({
-          date: new Date(year, month, currentDate),
-          shift: nightShift,
-          type: 'night-start',
-        });
+        // Night Shift ends at 07:00 on the next day
         currentDate++;
-      }
+        if (currentDate <= totalDays) {
+          calendarDays.push({
+            date: new Date(year, month, currentDate),
+            shift: nightShift,
+            type: 'night-end',
+          });
+        }
 
-      // Night Shift ends at 07:00 on the next day
-      if (currentDate <= totalDays) {
-        calendarDays.push({
-          date: new Date(year, month, currentDate),
-          shift: nightShift,
-          type: 'night-end',
-        });
-        currentDate++; // Move to the next day after the night shift
-      }
+        // Rest for exactly 48 hours after the night shift
+        currentDate++;
+        if (currentDate <= totalDays) {
+          calendarDays.push({
+            date: new Date(year, month, currentDate),
+            type: 'rest',
+          });
+        }
 
-      // Rest for exactly 48 hours after the night shift
-      if (currentDate <= totalDays) {
+        currentDate++;
+        if (currentDate <= totalDays) {
+          calendarDays.push({
+            date: new Date(year, month, currentDate),
+            type: 'rest',
+          });
+        }
+      } else {
+        // For days before the first shift day, just render them as normal days without shifts
         calendarDays.push({
           date: new Date(year, month, currentDate),
           type: 'rest',
         });
-        currentDate++; // Skip 1 day for rest (first 24 hours)
-      }
-      if (currentDate <= totalDays) {
-        calendarDays.push({
-          date: new Date(year, month, currentDate),
-          type: 'rest',
-        });
-        currentDate++; // Skip another day for rest (second 24 hours)
       }
     }
 
