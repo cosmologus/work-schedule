@@ -26,6 +26,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-static": "^3.0.5",
 		"dayjs": "^1.11.13",
 		"svelte-calendar": "^3.1.6"
 	}
