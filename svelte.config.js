@@ -15,7 +15,7 @@ const config = {
 			fallback: null
 		}),
 		paths: {
-			base: dev ? '' : '/<repository-name>' // replace <repository-name> with your repo name
+			base: dev ? '' : '/work-schedule' // replace <repository-name> with your repo name
 		},
 		prerender: {
 			default: true // Enable prerendering for static generation
