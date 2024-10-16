@@ -20,56 +20,70 @@
   let currentMonth = new Date().getMonth();
   let currentYear = new Date().getFullYear();
 
+  // Helper function to get the number of days in a month
   function daysInMonth(month: number, year: number): number {
     return new Date(year, month + 1, 0).getDate();
   }
 
-  function getStartDay(month: number, year: number): number {
-    const startDay = new Date(year, month, 1).getDay();
-    return (startDay + 6) % 7; // Adjust for Monday start
-  }
-
+  // Generate work shifts based on the correct pattern: day shift, 24 hours rest, night shift, 48 hours rest
   function generateCalendar(month: number, year: number): ShiftDay[] {
     const totalDays = daysInMonth(month, year);
-    const startDayOffset = getStartDay(month, year);
     const calendarDays: ShiftDay[] = [];
+    let currentDate = 1; // Start from the first day of the month
 
-    let shiftPattern = ["day", "rest24", "night", "rest48"];
-    let shiftIndex = 0;
+    while (currentDate <= totalDays) {
+      const currentDateObj = new Date(year, month, currentDate);
 
-    for (let i = 0; i < startDayOffset; i++) {
-      calendarDays.push({
-        date: new Date(year, month, i),
-        type: "empty",
-      });
-    }
-
-    for (let i = 1; i <= totalDays; i++) {
-      let shiftType = shiftPattern[shiftIndex % shiftPattern.length];
-      let shift: Shift | undefined = undefined;
-
-      if (shiftType === "day") {
-        shift = dayShift;
-        shiftIndex++;
-      } else if (shiftType === "night") {
-        shift = nightShift;
-        shiftIndex++;
-      } else if (shiftType === "rest24") {
-        shiftIndex++;
-      } else if (shiftType === "rest48") {
-        shiftIndex += 2;
+      // Day Shift
+      if (currentDate <= totalDays) {
+        calendarDays.push({
+          date: new Date(year, month, currentDate),
+          shift: dayShift,
+          type: 'day',
+        });
+        currentDate++; // Move to the next day
       }
 
-      calendarDays.push({
-        date: new Date(year, month, i),
-        shift: shift,
-        type: shiftType,
-      });
+      // Rest for 24 hours
+      if (currentDate <= totalDays) {
+        calendarDays.push({
+          date: new Date(year, month, currentDate),
+          type: 'rest',
+        });
+        currentDate++; // Skip 1 day for rest
+      }
+
+      // Night Shift (19:00 on one day, 07:00 on the next)
+      if (currentDate <= totalDays) {
+        calendarDays.push({
+          date: new Date(year, month, currentDate),
+          shift: nightShift,
+          type: 'night',
+        });
+        currentDate++; // Move to the next day for the night shift continuation
+      }
+
+      // Rest for 48 hours
+      if (currentDate <= totalDays) {
+        calendarDays.push({
+          date: new Date(year, month, currentDate),
+          type: 'rest',
+        });
+        currentDate++; // Skip 1 day for rest (first 24 hours)
+      }
+      if (currentDate <= totalDays) {
+        calendarDays.push({
+          date: new Date(year, month, currentDate),
+          type: 'rest',
+        });
+        currentDate++; // Skip another day for rest (second 24 hours)
+      }
     }
 
     return calendarDays;
   }
 
+  // On component mount, generate the calendar for the current month
   onMount(() => {
     days = generateCalendar(currentMonth, currentYear);
   });
@@ -93,22 +107,24 @@
     position: relative;
   }
 
-  .half-cell {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    position: relative;
-  }
-
-  /* Half filled background colors */
+  /* Full-height, half-width grey background for right side */
   .half-right {
-    background: linear-gradient(to left, lightgray 50%, transparent 50%);
+    background-color: lightgray;
+    height: 100%;
+    width: 50%;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 
+  /* Full-height, half-width grey background for left side */
   .half-left {
-    background: linear-gradient(to right, lightgray 50%, transparent 50%);
+    background-color: lightgray;
+    height: 100%;
+    width: 50%;
+    position: absolute;
+    left: 0;
+    top: 0;
   }
 
   /* Shift-day for normal day shifts */
@@ -116,7 +132,6 @@
     background-color: lightblue;
   }
 
-  /* Rest day style */
   .rest {
     background-color: white;
   }
@@ -133,11 +148,13 @@
   .right-align {
     text-align: right;
     padding-right: 5px;
+    z-index: 1; /* Ensure time text stays above background */
   }
 
   .left-align {
     text-align: left;
     padding-left: 5px;
+    z-index: 1; /* Ensure time text stays above background */
   }
 
   .time-text {
@@ -177,7 +194,8 @@
       <!-- For night shift -->
       {#if day.type === 'night'}
         <!-- Night Shift Start (19:00) on the starting day -->
-        <div class="half-cell half-right">
+        <div class="half-cell">
+          <div class="half-right"></div> <!-- Right half of the cell filled -->
           <div class="time-text time-right">19:00</div>
         </div>
       {/if}
@@ -188,7 +206,8 @@
       <div class="day {days[index + 1].type === 'rest' ? 'rest' : ''}">
         <p>{days[index + 1].date.getDate()}</p>
         <!-- Night Shift End (07:00) on the next day -->
-        <div class="half-cell half-left">
+        <div class="half-cell">
+          <div class="half-left"></div> <!-- Left half of the cell filled -->
           <div class="time-text time-left">07:00</div>
         </div>
       </div>
