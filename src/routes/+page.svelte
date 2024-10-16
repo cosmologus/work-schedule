@@ -28,12 +28,29 @@
     return new Date(year, month + 1, 0).getDate();
   }
 
+  // Helper function to calculate the starting day of the week for the given month and year
+  function getStartDay(month: number, year: number): number {
+    const startDay = new Date(year, month, 1).getDay();
+    // Adjust so that Monday is the first day of the week (0 = Monday, 6 = Sunday)
+    return (startDay + 6) % 7;
+  }
+
   // Generate work shifts based on the work schedule pattern
   function generateCalendar(month: number, year: number): ShiftDay[] {
     const totalDays = daysInMonth(month, year);
+    const startDayOffset = getStartDay(month, year); // Get the first day offset (Monday start)
     const calendarDays: ShiftDay[] = [];
+
     let shiftPattern = ["day", "rest24", "night", "rest48"]; // Day, 24h rest, night, 48h rest
     let shiftIndex = 0;
+
+    // Push empty days for the start of the week (before the first Monday)
+    for (let i = 0; i < startDayOffset; i++) {
+      calendarDays.push({
+        date: new Date(year, month, i),
+        type: "empty", // Empty day to fill space
+      });
+    }
 
     for (let i = 1; i <= totalDays; i++) {
       let shiftType = shiftPattern[shiftIndex % shiftPattern.length];
@@ -92,38 +109,36 @@
     background-color: white;
   }
 
+  .empty {
+    background-color: transparent;
+  }
+
   .day-header {
     font-weight: bold;
     text-align: center;
   }
-
-  @media (max-width: 600px) {
-    .calendar {
-      grid-template-columns: repeat(2, 1fr); /* Stack into two columns on smaller screens */
-    }
-  }
-
 </style>
 
 <!-- Calendar Layout -->
 <div class="calendar">
-<!-- Weekday Headers -->
-<div class="day-header">Mon</div>
-<div class="day-header">Tue</div>
-<div class="day-header">Wed</div>
-<div class="day-header">Thu</div>
-<div class="day-header">Fri</div>
-<div class="day-header">Sat</div>
-<div class="day-header">Sun</div>
-
+  <!-- Weekday Headers -->
+  <div class="day-header">Mon</div>
+  <div class="day-header">Tue</div>
+  <div class="day-header">Wed</div>
+  <div class="day-header">Thu</div>
+  <div class="day-header">Fri</div>
+  <div class="day-header">Sat</div>
+  <div class="day-header">Sun</div>
 
   <!-- Generate Calendar Days -->
   {#each days as day (day.date)}
-  <!-- Dynamically apply classes based on shift type -->
-      <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night' ? 'shift-night' : 'rest'}">
-      <p>{day.date.getDate()}</p>
-      {#if day.shift}
-        <p>{day.shift.start} - {day.shift.end}</p>
+    <!-- Dynamically apply classes based on shift type -->
+    <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night' ? 'shift-night' : day.type === 'rest' ? 'rest' : 'empty'}">
+      {#if day.type !== 'empty'}
+        <p>{day.date.getDate()}</p>
+        {#if day.shift}
+          <p>{day.shift.start} - {day.shift.end}</p>
+        {/if}
       {/if}
     </div>
   {/each}
