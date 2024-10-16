@@ -42,7 +42,7 @@
   function generateCalendar(month: number, year: number): ShiftDay[] {
     const totalDays = daysInMonth(month, year);
     const calendarDays: ShiftDay[] = [];
-    let patternDay = firstDayShift; // Start the pattern from the selected first day shift
+    let currentDate = 1; // Start from the first day of the month
     let isPatternActive = false; // Activate the pattern once we reach the firstDayShift
 
     // Add empty cells before the first day to align the first day with the correct weekday
@@ -55,56 +55,50 @@
     }
 
     // Generate the calendar for the days of the month
-    for (let currentDate = 1; currentDate <= totalDays; currentDate++) {
+    while (currentDate <= totalDays) {
       // Activate the shift pattern once we hit the selected firstDayShift
-      if (currentDate === firstDayShift) {
+      if (currentDate >= firstDayShift) {
         isPatternActive = true;
       }
 
-      // Only apply shift patterns starting from the selected first shift day
       if (isPatternActive) {
         // Day Shift (07:00 - 19:00)
-        calendarDays.push({
-          date: new Date(year, month, currentDate),
-          shift: dayShift,
-          type: 'day',
-        });
+        if (currentDate <= totalDays) {
+          calendarDays.push({
+            date: new Date(year, month, currentDate),
+            shift: dayShift,
+            type: 'day',
+          });
+          currentDate++;
+        }
 
-        // Night Shift starts at 19:00 (on the same day)
-        currentDate++;
+        // Rest for 24 hours (but night shift starts at 19:00 on the rest day)
         if (currentDate <= totalDays) {
           calendarDays.push({
             date: new Date(year, month, currentDate),
             shift: nightShift,
-            type: 'night-start',
+            type: 'night-start', // Night shift starts at 19:00
           });
+          currentDate++;
         }
 
         // Night Shift ends at 07:00 on the next day
-        currentDate++;
         if (currentDate <= totalDays) {
           calendarDays.push({
             date: new Date(year, month, currentDate),
             shift: nightShift,
-            type: 'night-end',
+            type: 'night-end', // Night shift ends at 07:00
           });
+          currentDate++; // Move to the next day after the night shift
         }
 
-        // Rest for exactly 48 hours after the night shift
-        currentDate++;
+        // Rest for exactly 24 hours before the next day shift
         if (currentDate <= totalDays) {
           calendarDays.push({
             date: new Date(year, month, currentDate),
             type: 'rest',
           });
-        }
-
-        currentDate++;
-        if (currentDate <= totalDays) {
-          calendarDays.push({
-            date: new Date(year, month, currentDate),
-            type: 'rest',
-          });
+          currentDate++; // Rest for one day
         }
       } else {
         // For days before the first shift day, just render them as normal days without shifts
@@ -112,6 +106,7 @@
           date: new Date(year, month, currentDate),
           type: 'rest',
         });
+        currentDate++;
       }
     }
 
