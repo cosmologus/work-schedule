@@ -10,60 +10,81 @@
   interface ShiftDay {
     date: Date;
     shift?: Shift;
-    type: string; // "day", "night", or "rest"
+    type: string; // "day", "night-start", "night-end", "rest"
   }
 
   const dayShift: Shift = { start: "07:00", end: "19:00", color: "lightblue" };
   const nightShift: Shift = { start: "19:00", end: "07:00", color: "lightgray" };
 
   let days: ShiftDay[] = [];
-  let currentMonth = new Date().getMonth();
-  let currentYear = new Date().getFullYear();
+  let selectedMonth: number = new Date().getMonth(); // Default to the current month
+  let selectedYear: number = new Date().getFullYear();
+  let firstDayShift: number = 1; // Default to the 1st of the month for the first day shift
+
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
 
   // Helper function to get the number of days in a month
   function daysInMonth(month: number, year: number): number {
     return new Date(year, month + 1, 0).getDate();
   }
 
-  // Generate work shifts based on the correct pattern: day shift, 24 hours rest, night shift, 48 hours rest
+  // Helper function to calculate the starting day of the week for the given month and year
+  // Adjust the result to make Monday = 0, Sunday = 6
+  function getStartDay(month: number, year: number): number {
+    const startDay = new Date(year, month, 1).getDay();
+    return (startDay + 6) % 7;  // Shift so that Monday is 0 and Sunday is 6
+  }
+
+  // Generate the correct work shift pattern based on the first day shift
   function generateCalendar(month: number, year: number): ShiftDay[] {
     const totalDays = daysInMonth(month, year);
     const calendarDays: ShiftDay[] = [];
-    let currentDate = 1; // Start from the first day of the month
+    let currentDate = firstDayShift; // Start from the first day shift selected
+
+    // Add empty cells before the first day to align the first day with the correct weekday
+    const startDayOffset = getStartDay(month, year); // Adjusted start day based on Monday-first week
+    for (let i = 0; i < startDayOffset; i++) {
+      calendarDays.push({
+        date: new Date(year, month, i),
+        type: 'empty', // Empty day to fill space before the first day
+      });
+    }
 
     while (currentDate <= totalDays) {
-      const currentDateObj = new Date(year, month, currentDate);
-
-      // Day Shift
+      // Day Shift (07:00 - 19:00)
       if (currentDate <= totalDays) {
         calendarDays.push({
           date: new Date(year, month, currentDate),
           shift: dayShift,
           type: 'day',
         });
-        currentDate++; // Move to the next day
+        currentDate++;
       }
 
-      // Rest for 24 hours
-      if (currentDate <= totalDays) {
-        calendarDays.push({
-          date: new Date(year, month, currentDate),
-          type: 'rest',
-        });
-        currentDate++; // Skip 1 day for rest
-      }
-
-      // Night Shift (19:00 on one day, 07:00 on the next)
+      // Night Shift starts at 19:00 (on the same day)
       if (currentDate <= totalDays) {
         calendarDays.push({
           date: new Date(year, month, currentDate),
           shift: nightShift,
-          type: 'night',
+          type: 'night-start',
         });
-        currentDate++; // Move to the next day for the night shift continuation
+        currentDate++;
       }
 
-      // Rest for 48 hours
+      // Night Shift ends at 07:00 on the next day
+      if (currentDate <= totalDays) {
+        calendarDays.push({
+          date: new Date(year, month, currentDate),
+          shift: nightShift,
+          type: 'night-end',
+        });
+        currentDate++; // Move to the next day after the night shift
+      }
+
+      // Rest for exactly 48 hours after the night shift
       if (currentDate <= totalDays) {
         calendarDays.push({
           date: new Date(year, month, currentDate),
@@ -83,9 +104,14 @@
     return calendarDays;
   }
 
+  // Recalculate the calendar whenever the month or first day shift changes
+  function recalculateCalendar() {
+    days = generateCalendar(selectedMonth, selectedYear);
+  }
+
   // On component mount, generate the calendar for the current month
   onMount(() => {
-    days = generateCalendar(currentMonth, currentYear);
+    recalculateCalendar();
   });
 </script>
 
@@ -107,7 +133,6 @@
     position: relative;
   }
 
-  /* Full-height, half-width grey background for right side */
   .half-right {
     background-color: lightgray;
     height: 100%;
@@ -117,7 +142,6 @@
     top: 0;
   }
 
-  /* Full-height, half-width grey background for left side */
   .half-left {
     background-color: lightgray;
     height: 100%;
@@ -127,17 +151,12 @@
     top: 0;
   }
 
-  /* Shift-day for normal day shifts */
   .shift-day {
     background-color: lightblue;
   }
 
   .rest {
     background-color: white;
-  }
-
-  .empty {
-    background-color: transparent;
   }
 
   .day-header {
@@ -165,16 +184,27 @@
     align-items: center;
   }
 
-  /* Position time text on the right */
   .time-right {
     right: 5px;
   }
 
-  /* Position time text on the left */
   .time-left {
     left: 5px;
   }
 </style>
+
+<!-- Month and First Day Shift Selectors -->
+<div>
+  <label for="month">Select Month:</label>
+  <select id="month" bind:value={selectedMonth} on:change={recalculateCalendar}>
+    {#each months as month, index}
+      <option value={index} selected={selectedMonth === index}>{month}</option>
+    {/each}
+  </select>
+
+  <label for="firstShiftDay">First Day Shift:</label>
+  <input type="number" id="firstShiftDay" bind:value={firstDayShift} min="1" max="31" on:change={recalculateCalendar} />
+</div>
 
 <div class="calendar">
   <!-- Weekday Headers -->
@@ -188,29 +218,26 @@
 
   <!-- Generate Calendar Days -->
   {#each days as day, index (day.date)}
-    <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night' ? '' : day.type === 'rest' ? 'rest' : 'empty'}">
-      <p>{day.date.getDate()}</p>
+    <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night-start' ? '' : day.type === 'night-end' ? '' : day.type === 'rest' ? 'rest' : 'empty'}">
+      {#if day.type !== 'empty'}
+        <p>{day.date.getDate()}</p>
+      {/if}
 
-      <!-- For night shift -->
-      {#if day.type === 'night'}
-        <!-- Night Shift Start (19:00) on the starting day -->
+      <!-- For night shift start -->
+      {#if day.type === 'night-start'}
         <div class="half-cell">
           <div class="half-right"></div> <!-- Right half of the cell filled -->
           <div class="time-text time-right">19:00</div>
         </div>
       {/if}
-    </div>
 
-    <!-- If the current day is a night shift, show 07:00 on the next day -->
-    {#if day.type === 'night' && days[index + 1]}
-      <div class="day {days[index + 1].type === 'rest' ? 'rest' : ''}">
-        <p>{days[index + 1].date.getDate()}</p>
-        <!-- Night Shift End (07:00) on the next day -->
+      <!-- For night shift end -->
+      {#if day.type === 'night-end'}
         <div class="half-cell">
           <div class="half-left"></div> <!-- Left half of the cell filled -->
           <div class="time-text time-left">07:00</div>
         </div>
-      </div>
-    {/if}
+      {/if}
+    </div>
   {/each}
 </div>
