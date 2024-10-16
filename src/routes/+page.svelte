@@ -200,6 +200,12 @@
   .time-left {
     left: 5px;
   }
+
+  .day p {
+  position: relative;
+  z-index: 10; /* Ensure the date number is always in front of everything else */
+  font-weight: bold; /* Optional: make the date bold for better visibility */
+}
 </style>
 
 <!-- Month and First Day Shift Selectors -->
