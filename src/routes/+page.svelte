@@ -242,7 +242,6 @@
       {#if day.type === 'night-start'}
         <div class="half-cell">
           <div class="half-right"></div> <!-- Right half of the cell filled -->
-          <div class="time-text time-right">19:00</div>
         </div>
       {/if}
 
@@ -250,7 +249,6 @@
       {#if day.type === 'night-end'}
         <div class="half-cell">
           <div class="half-left"></div> <!-- Left half of the cell filled -->
-          <div class="time-text time-left">07:00</div>
         </div>
       {/if}
     </div>
