@@ -17,7 +17,9 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
-		paths: 'work-schedule'
+		paths: {
+			base: 'work-schedule'
+		}
 	}
 };
 
