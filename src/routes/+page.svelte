@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  // Define the structure of shifts and days
   interface Shift {
     start: string;
     end: string;
@@ -14,41 +13,34 @@
     type: string; // "day", "night", or "rest"
   }
 
-  // Define shifts: day shift and night shift
   const dayShift: Shift = { start: "07:00", end: "19:00", color: "lightblue" };
   const nightShift: Shift = { start: "19:00", end: "07:00", color: "lightgray" };
 
-  // Calendar and shifts state
   let days: ShiftDay[] = [];
   let currentMonth = new Date().getMonth();
   let currentYear = new Date().getFullYear();
 
-  // Helper function to get the number of days in a month
   function daysInMonth(month: number, year: number): number {
     return new Date(year, month + 1, 0).getDate();
   }
 
-  // Helper function to calculate the starting day of the week for the given month and year
   function getStartDay(month: number, year: number): number {
     const startDay = new Date(year, month, 1).getDay();
-    // Adjust so that Monday is the first day of the week (0 = Monday, 6 = Sunday)
-    return (startDay + 6) % 7;
+    return (startDay + 6) % 7; // Adjust for Monday start
   }
 
-  // Generate work shifts based on the work schedule pattern
   function generateCalendar(month: number, year: number): ShiftDay[] {
     const totalDays = daysInMonth(month, year);
-    const startDayOffset = getStartDay(month, year); // Get the first day offset (Monday start)
+    const startDayOffset = getStartDay(month, year);
     const calendarDays: ShiftDay[] = [];
 
-    let shiftPattern = ["day", "rest24", "night", "rest48"]; // Day, 24h rest, night, 48h rest
+    let shiftPattern = ["day", "rest24", "night", "rest48"];
     let shiftIndex = 0;
 
-    // Push empty days for the start of the week (before the first Monday)
     for (let i = 0; i < startDayOffset; i++) {
       calendarDays.push({
         date: new Date(year, month, i),
-        type: "empty", // Empty day to fill space
+        type: "empty",
       });
     }
 
@@ -65,7 +57,7 @@
       } else if (shiftType === "rest24") {
         shiftIndex++;
       } else if (shiftType === "rest48") {
-        shiftIndex += 2; // Skip two days for 48-hour rest
+        shiftIndex += 2;
       }
 
       calendarDays.push({
@@ -74,10 +66,10 @@
         type: shiftType,
       });
     }
+
     return calendarDays;
   }
 
-  // On component mount, generate the calendar for the current month
   onMount(() => {
     days = generateCalendar(currentMonth, currentYear);
   });
@@ -94,17 +86,37 @@
   .day {
     padding: 10px;
     border: 1px solid #ccc;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100px; /* Control height of day cell */
+    position: relative;
   }
 
+  .half-cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+  }
+
+  /* Half filled background colors */
+  .half-right {
+    background: linear-gradient(to left, lightgray 50%, transparent 50%);
+  }
+
+  .half-left {
+    background: linear-gradient(to right, lightgray 50%, transparent 50%);
+  }
+
+  /* Shift-day for normal day shifts */
   .shift-day {
     background-color: lightblue;
   }
 
-  .shift-night {
-    background-color: lightgray;
-  }
-
+  /* Rest day style */
   .rest {
     background-color: white;
   }
@@ -117,9 +129,36 @@
     font-weight: bold;
     text-align: center;
   }
+
+  .right-align {
+    text-align: right;
+    padding-right: 5px;
+  }
+
+  .left-align {
+    text-align: left;
+    padding-left: 5px;
+  }
+
+  .time-text {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Position time text on the right */
+  .time-right {
+    right: 5px;
+  }
+
+  /* Position time text on the left */
+  .time-left {
+    left: 5px;
+  }
 </style>
 
-<!-- Calendar Layout -->
 <div class="calendar">
   <!-- Weekday Headers -->
   <div class="day-header">Mon</div>
@@ -131,15 +170,28 @@
   <div class="day-header">Sun</div>
 
   <!-- Generate Calendar Days -->
-  {#each days as day (day.date)}
-    <!-- Dynamically apply classes based on shift type -->
-    <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night' ? 'shift-night' : day.type === 'rest' ? 'rest' : 'empty'}">
-      {#if day.type !== 'empty'}
-        <p>{day.date.getDate()}</p>
-        {#if day.shift}
-          <p>{day.shift.start} - {day.shift.end}</p>
-        {/if}
+  {#each days as day, index (day.date)}
+    <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night' ? '' : day.type === 'rest' ? 'rest' : 'empty'}">
+      <p>{day.date.getDate()}</p>
+
+      <!-- For night shift -->
+      {#if day.type === 'night'}
+        <!-- Night Shift Start (19:00) on the starting day -->
+        <div class="half-cell half-right">
+          <div class="time-text time-right">19:00</div>
+        </div>
       {/if}
     </div>
+
+    <!-- If the current day is a night shift, show 07:00 on the next day -->
+    {#if day.type === 'night' && days[index + 1]}
+      <div class="day {days[index + 1].type === 'rest' ? 'rest' : ''}">
+        <p>{days[index + 1].date.getDate()}</p>
+        <!-- Night Shift End (07:00) on the next day -->
+        <div class="half-cell half-left">
+          <div class="time-text time-left">07:00</div>
+        </div>
+      </div>
+    {/if}
   {/each}
 </div>
