@@ -18,7 +18,7 @@ const config = {
 			strict: true
 		}),
 		paths: {
-			base: '/work-schedule'
+			base: '/work-schedule/build'
 		}
 	}
 };
