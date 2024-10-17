@@ -127,69 +127,69 @@
 </script>
 
 <style>
- .calendar {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(50px, 1fr)); /* Responsive columns with a minimum width of 50px */
-  gap: 5px;
-  margin: 20px;
-}
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(50px, 1fr)); /* Responsive columns with a minimum width of 50px */
+    gap: 5px;
+    margin: 20px;
+  }
 
-.day {
-  border: 1px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Center content vertically */
-  align-items: center; /* Center content horizontally */
-  aspect-ratio: 1 / 1; /* Keeps the cell square */
-  position: relative;
-  padding: 10px;
-}
+  .day {
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    aspect-ratio: 1 / 1; /* Keeps the cell square */
+    position: relative;
+    padding: 10px;
+  }
 
-.half-right {
-  background-color: lightgray;
-  height: 100%;
-  width: 50%;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
+  .half-right {
+    background-color: lightgray;
+    height: 100%;
+    width: 50%;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
 
-.half-left {
-  background-color: lightgray;
-  height: 100%;
-  width: 50%;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
+  .half-left {
+    background-color: lightgray;
+    height: 100%;
+    width: 50%;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
 
-.shift-day {
-  background-color: lightblue;
-}
+  .shift-day {
+    background-color: lightblue;
+  }
 
-.rest {
-  background-color: white;
-}
+  .rest {
+    background-color: white;
+  }
 
-.day-header {
-  font-weight: bold;
-  text-align: center;
-}
+  .day-header {
+    font-weight: bold;
+    text-align: center;
+  }
 
-.month-group {
-  margin-bottom: 20px;
-}
+  .month-group {
+    margin-bottom: 20px;
+  }
 
-.day p {
-  position: relative;
-  z-index: 10;
-  margin: 0; /* Remove default margin */
-  font-size: 1em; /* Adjust font size as needed */
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  height: 100%; /* Ensure it takes up the full height of the day cell */
-  width: 100%; /* Ensure it takes up the full width of the day cell */
+  .day p {
+    position: relative;
+    z-index: 10;
+    margin: 0; /* Remove default margin */
+    font-size: 1em; /* Adjust font size as needed */
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 100%; /* Ensure it takes up the full height of the day cell */
+    width: 100%; /* Ensure it takes up the full width of the day cell */
 }
 
 /* Responsive adjustments */
@@ -212,7 +212,6 @@
     padding: 2px; /* Minimize padding for very small screens */
   }
 }
-
 </style>
 
 <!-- Calendar Display -->
@@ -227,6 +226,38 @@
       {/each}
 
       {#each generateCalendar(index + currentMonth, selectedYear) as day}
+        <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night-start' ? '' : day.type === 'night-end' ? '' : day.type === 'rest' ? 'rest' : 'empty'}">
+          {#if day.type !== 'empty'}
+            <p>{day.date.getDate()}</p>
+          {/if}
+
+          <!-- Night Shift visualization -->
+          {#if day.type === 'night-start'}
+            <div class="half-cell">
+              <div class="half-right"></div>
+            </div>
+          {/if}
+
+          {#if day.type === 'night-end'}
+            <div class="half-cell">
+              <div class="half-left"></div>
+            </div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/each}
+
+  <!-- Next Year months (2025) -->
+  {#each months as month, index}
+    <div class="day-header">{month} {selectedYear + 1}</div>
+    <div class="calendar">
+      <!-- Weekday Headers -->
+      {#each weekdays as weekday}
+        <div class="day-header">{weekday}</div>
+      {/each}
+
+      {#each generateCalendar(index, selectedYear + 1) as day}
         <div class="day {day.type === 'day' ? 'shift-day' : day.type === 'night-start' ? '' : day.type === 'night-end' ? '' : day.type === 'rest' ? 'rest' : 'empty'}">
           {#if day.type !== 'empty'}
             <p>{day.date.getDate()}</p>
