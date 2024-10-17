@@ -127,63 +127,92 @@
 </script>
 
 <style>
+ .calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(50px, 1fr)); /* Responsive columns with a minimum width of 50px */
+  gap: 5px;
+  margin: 20px;
+}
+
+.day {
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  aspect-ratio: 1 / 1; /* Keeps the cell square */
+  position: relative;
+  padding: 10px;
+}
+
+.half-right {
+  background-color: lightgray;
+  height: 100%;
+  width: 50%;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.half-left {
+  background-color: lightgray;
+  height: 100%;
+  width: 50%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.shift-day {
+  background-color: lightblue;
+}
+
+.rest {
+  background-color: white;
+}
+
+.day-header {
+  font-weight: bold;
+  text-align: center;
+}
+
+.month-group {
+  margin-bottom: 20px;
+}
+
+.day p {
+  position: relative;
+  z-index: 10;
+  margin: 0; /* Remove default margin */
+  font-size: 1em; /* Adjust font size as needed */
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100%; /* Ensure it takes up the full height of the day cell */
+  width: 100%; /* Ensure it takes up the full width of the day cell */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin: 20px;
+    grid-template-columns: repeat(7, minmax(40px, 1fr)); /* Decrease min cell size for smaller screens */
   }
 
   .day {
-    padding: 10px;
-    border: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100px; /* Control height of day cell */
-    position: relative;
+    padding: 5px; /* Adjust padding to make it fit better on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar {
+    grid-template-columns: repeat(7, minmax(30px, 1fr)); /* Further decrease min cell size for very small screens */
   }
 
-  .half-right {
-    background-color: lightgray;
-    height: 100%;
-    width: 50%;
-    position: absolute;
-    right: 0;
-    top: 0;
+  .day {
+    padding: 2px; /* Minimize padding for very small screens */
   }
+}
 
-  .half-left {
-    background-color: lightgray;
-    height: 100%;
-    width: 50%;
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
-
-  .shift-day {
-    background-color: lightblue;
-  }
-
-  .rest {
-    background-color: white;
-  }
-
-  .day-header {
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .month-group {
-    margin-bottom: 20px;
-  }
-
-  .day p {
-    position: relative;
-    z-index: 10;
-    font-weight: bold;
-  }
 </style>
 
 <!-- Calendar Display -->
