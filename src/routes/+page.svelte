@@ -216,7 +216,7 @@ function generateCalendar(month: number, year: number): ShiftDay[] {
 </style>
 
 <!-- Month and First Day Shift Selectors -->
-<div>
+<!-- <div>
   <label for="month">Select Month:</label>
   <select id="month" bind:value={selectedMonth} on:change={recalculateCalendar}>
     {#each months.slice(currentMonth, 12) as month, index}
@@ -229,7 +229,7 @@ function generateCalendar(month: number, year: number): ShiftDay[] {
 
   <label for="firstShiftDay">First Day Shift:</label>
   <input type="number" id="firstShiftDay" bind:value={firstDayShift} min="1" max="31" on:change={recalculateCalendar} />
-</div>
+</div> -->
 
 <!-- Calendar Display -->
 <div class="month-group">
